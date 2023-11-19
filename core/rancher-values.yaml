@@ -1,0 +1,30 @@
+# https://github.com/rancher/rancher/blob/release/v2.8/chart/values.yaml
+# https://doc.traefik.io/traefik/routing/providers/kubernetes-ingress/
+
+hostname: rancher.${DOMAIN}
+bootstrapPassword: ${RANCHER_PASSWORD}
+ingress:
+  enabled: true
+  # ingressClassName: rancher
+  extraAnnotations: # annotations:
+    kubernetes.io/ingress.class: traefik
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.tls.domains.0.main: rancher.${DOMAIN}
+    traefik.ingress.kubernetes.io/service.serversscheme: https
+    # traefik.ingress.kubernetes.io/router.middlewares: traefik-https-redirect-middleware@kubernetescrd
+  tls:
+    source: secret
+    secretName: traefik-cert-prod
+  # hosts:
+  # - host: admin.dmitrii.it
+  #   serviceName: rancher
+  #   servicePort: 80
+  #   paths:
+  #   - path: /
+  #     pathType: Prefix
+  #     # backend:
+  #     #   service:
+  #     #     name: rancher
+  #     #     port:
+  #     #       number: 80 

@@ -1,0 +1,124 @@
+# https://github.com/prometheus-community/helm-charts/blob/main/charts/kube-prometheus-stack/values.yaml
+
+# Disable etcd monitoring. See https://github.com/cablespaghetti/k3s-monitoring/issues/4
+kubeEtcd:
+  enabled: false
+
+# Disable kube-controller-manager and kube-scheduler monitoring. See https://github.com/cablespaghetti/k3s-monitoring/issues/2
+kubeControllerManager:
+  enabled: false
+kubeScheduler:
+  enabled: false
+
+prometheus:
+  prometheusSpec:
+    retention: 3d
+    scrapeInterval: 30s
+    evaluationInterval: 30s
+    storageSpec:
+     emptyDir:
+       medium: Memory
+    # storageSpec:
+    #  volumeClaimTemplate:
+    #    metadata:
+    #      name: prometheus-longhorn-pvc
+    #    spec:
+    #      accessModes:
+    #        - ReadWriteOnce
+    #      storageClassName: longhorn
+    #      resources:
+    #        requests:
+    #          storage: 2Gi
+  ingress:
+    enabled: true
+    ingressClassName: traefik
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      traefik.ingress.kubernetes.io/router.entrypoints: websecure
+      traefik.ingress.kubernetes.io/service.serversscheme: https
+      traefik.ingress.kubernetes.io/router.middlewares: traefik-basic-auth-middleware@kubernetescrd #,traefik-https-redirect-middleware@kubernetescrd
+    hosts:
+      - prometheus.${DOMAIN}
+    tls:
+    - secretName: traefik-cert-prod
+      hosts:
+      - prometheus.${DOMAIN}
+
+grafana:
+  enabled: true
+  ingress:
+    enabled: true
+    ingressClassName: traefik
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      traefik.ingress.kubernetes.io/router.entrypoints: websecure
+      traefik.ingress.kubernetes.io/service.serversscheme: https
+      traefik.ingress.kubernetes.io/router.middlewares: traefik-basic-auth-middleware@kubernetescrd #,traefik-https-redirect-middleware@kubernetescrd
+    hosts:
+      - grafana.${DOMAIN}
+    tls:
+    - secretName: traefik-cert-prod
+      hosts:
+      - grafana.${DOMAIN}
+  plugins:
+  - grafana-piechart-panel
+  - grafana-worldmap-panel
+  - grafana-clock-panel
+  - flant-statusmap-panel
+  - grafana-github-datasource
+  - grafana-simple-json-datasource
+  - simpod-json-datasource
+  dashboardProviders:
+   dashboardproviders.yaml:
+     apiVersion: 1
+     providers:
+     - name: 'default'
+       orgId: 1
+       folder: ''
+       type: file
+       disableDeletion: false
+       editable: true
+       options:
+         path: /var/lib/grafana/dashboards/default
+  dashboardsConfigMaps:
+   default: "traefik-dashboard"
+  grafana.ini:
+    users:
+      viewers_can_edit: true
+    auth:
+      disable_login_form: true
+      disable_signout_menu: true
+      disable_signin_menu: true
+    auth.anonymous:
+      enabled: true
+      org_role: Admin
+    auth.basic:
+      enabled: false
+  persistence:
+    enabled: true
+    type: pvc
+    # storageClassName: longhorn
+    # accessModes:
+    # - ReadWriteOnce
+    # size: 4Gi
+    finalizers:
+    - kubernetes.io/pvc-protection
+    existingClaim: grafana-longhorn-pvc
+
+  
+alertmanager:
+  enabled: true
+  ingress:
+    enabled: true
+    ingressClassName: traefik
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      traefik.ingress.kubernetes.io/router.entrypoints: websecure
+      traefik.ingress.kubernetes.io/service.serversscheme: https
+      traefik.ingress.kubernetes.io/router.middlewares: traefik-basic-auth-middleware@kubernetescrd #,traefik-https-redirect-middleware@kubernetescrd
+    hosts:
+      - alert.${DOMAIN}
+    tls:
+    - secretName: traefik-cert-prod
+      hosts:
+      - alert.${DOMAIN}

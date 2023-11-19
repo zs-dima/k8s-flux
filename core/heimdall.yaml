@@ -1,0 +1,103 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: heimdall
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: heimdall-longhorn-pvc
+  namespace: heimdall
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: longhorn
+  resources:
+    requests:
+      storage: 100Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: heimdall-service
+  namespace: heimdall
+spec:
+  selector:
+    app: heimdall
+  ports:
+    - name: web
+      protocol: TCP
+      port: 80
+    - name: websecure
+      protocol: TCP
+      port: 443
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: heimdall
+  namespace: heimdall
+  labels:
+    app: heimdall
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: heimdall
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: heimdall
+    spec:
+      containers:
+      - image: ghcr.io/linuxserver/heimdall
+        name: heimdall
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
+          name: web
+          protocol: TCP
+        - containerPort: 443
+          name: websecure
+          protocol: TCP
+        volumeMounts:
+        - name: heimdall-longhorn-volume
+          mountPath: /config
+          subPath: config
+      volumes:
+      - name: heimdall-longhorn-volume
+        persistentVolumeClaim:
+          claimName: heimdall-longhorn-pvc
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: heimdall-ingress
+  namespace: heimdall
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/service.serversscheme: https
+    traefik.ingress.kubernetes.io/router.middlewares: traefik-basic-auth-middleware@kubernetescrd
+spec:
+  ingressClassName: traefik
+  rules:
+  - host: admin.${DOMAIN}
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: heimdall-service
+            port:
+              number: 80
+  tls:
+    - secretName: traefik-cert-prod
+      hosts:
+        - admin.${DOMAIN}
