@@ -84,11 +84,6 @@ helm repo add rancher-latest https://releases.rancher.com/server-charts/latest &
 envsubst < ./core/rancher-values.yaml | helm install -n cattle-system rancher rancher-latest/rancher \
   --version 2.8.0-rc3 \
   -f -
-
-envsubst < ./core/rancher-values.yaml | helm upgrade rancher rancher-latest/rancher \
-  --namespace cattle-system \
-  --version 2.8.0-rc3 \
-  -f -
 ```
 
 

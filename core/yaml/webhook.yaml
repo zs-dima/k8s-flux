@@ -1,0 +1,134 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: webhook-config
+data:
+  hooks.json: |
+    [
+      {
+        "id": "dockerhub-webhook",
+        "execute-command": "/scripts/update-deployment.sh",
+        // ... rest of your hooks.json content
+      }
+    ]
+
+[
+  {
+    "id": "dockerhub-webhook",
+    "execute-command": "/scripts/update-deployment.sh",
+    "pass-arguments-to-command":
+    [
+      {
+        "source": "payload",
+        "name": "push_data.tag"
+      },
+      {
+        "source": "payload",
+        "name": "repository.repo_name"
+      }
+    ],
+    "trigger-rule":
+    {
+      "match":
+      {
+        "type": "payload-hash-sha1",
+        "secret": "your-secret",
+        "parameter":
+        {
+          "source": "header",
+          "name": "X-Hub-Signature"
+        }
+      }
+    }
+  }
+]
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: update-script
+data:
+  update-deployment.sh: |
+    #!/bin/bash
+#!/bin/bash
+
+REPO_NAME=$1  # e.g., "myapp"
+TAG=$2        # e.g., "v1.2"
+
+# Loop through all deployments in all namespaces
+kubectl get deployments --all-namespaces -o jsonpath="{range .items[*]}{.metadata.namespace}{' '}{.metadata.name}{'\n'}{end}" | while read namespace deploy; do
+    # Find the container(s) using the specified image within the deployment
+    containers=$(kubectl get deployment $deploy -n $namespace -o jsonpath="{.spec.template.spec.containers[?(@.image == \"$REPO_NAME:$TAG\")].name}")
+
+    # If containers are found, update their image
+    for container in $containers; do
+        kubectl set image deployment/$deploy $container=$REPO_NAME:$TAG -n $namespace
+    done
+done
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webhook
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: webhook
+  template:
+    metadata:
+      labels:
+        app: webhook
+    spec:
+      containers:
+      - name: webhook
+        image: almir/webhook
+        ports:
+        - containerPort: 9000
+        volumeMounts:
+        - name: webhook-config-volume
+          mountPath: /etc/webhook
+          readOnly: true
+        - name: script-volume
+          mountPath: /scripts
+          readOnly: true
+      volumes:
+      - name: webhook-config-volume
+        configMap:
+          name: webhook-config
+      - name: script-volume
+        configMap:
+          name: update-script
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: webhook-sa
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: default
+  name: deployment-manager
+rules:
+  - apiGroups: ["apps"]
+    resources: ["deployments"]
+    verbs: ["get", "list", "watch", "update", "patch"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: deployment-manager-binding
+  namespace: default
+subjects:
+  - kind: ServiceAccount
+    name: webhook-sa
+    namespace: default
+roleRef:
+  kind: Role
+  name: deployment-manager
+  apiGroup: rbac.authorization.k8s.io

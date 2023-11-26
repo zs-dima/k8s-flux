@@ -15,20 +15,20 @@ prometheus:
     retention: 3d
     scrapeInterval: 30s
     evaluationInterval: 30s
-    storageSpec:
-     emptyDir:
-       medium: Memory
     # storageSpec:
-    #  volumeClaimTemplate:
-    #    metadata:
-    #      name: prometheus-longhorn-pvc
-    #    spec:
-    #      accessModes:
-    #        - ReadWriteOnce
-    #      storageClassName: longhorn
-    #      resources:
-    #        requests:
-    #          storage: 2Gi
+    #  emptyDir:
+    #    medium: Memory
+    storageSpec:
+     volumeClaimTemplate:
+       metadata:
+         name: prometheus-longhorn-pvc
+       spec:
+         storageClassName: longhorn
+         accessModes:
+           - ReadWriteOnce
+         resources:
+           requests:
+             storage: 1Gi
   ingress:
     enabled: true
     ingressClassName: traefik
@@ -36,7 +36,7 @@ prometheus:
       cert-manager.io/cluster-issuer: letsencrypt-prod
       traefik.ingress.kubernetes.io/router.entrypoints: websecure
       traefik.ingress.kubernetes.io/service.serversscheme: https
-      traefik.ingress.kubernetes.io/router.middlewares: traefik-basic-auth-middleware@kubernetescrd #,traefik-https-redirect-middleware@kubernetescrd
+      traefik.ingress.kubernetes.io/router.middlewares: traefik-basic-auth-middleware@kubernetescrd
     hosts:
       - prometheus.${DOMAIN}
     tls:
@@ -53,7 +53,7 @@ grafana:
       cert-manager.io/cluster-issuer: letsencrypt-prod
       traefik.ingress.kubernetes.io/router.entrypoints: websecure
       traefik.ingress.kubernetes.io/service.serversscheme: https
-      traefik.ingress.kubernetes.io/router.middlewares: traefik-basic-auth-middleware@kubernetescrd #,traefik-https-redirect-middleware@kubernetescrd
+      traefik.ingress.kubernetes.io/router.middlewares: traefik-basic-auth-middleware@kubernetescrd
     hosts:
       - grafana.${DOMAIN}
     tls:
@@ -100,7 +100,7 @@ grafana:
     # storageClassName: longhorn
     # accessModes:
     # - ReadWriteOnce
-    # size: 4Gi
+    # size: 1Gi
     finalizers:
     - kubernetes.io/pvc-protection
     existingClaim: grafana-longhorn-pvc
@@ -115,7 +115,7 @@ alertmanager:
       cert-manager.io/cluster-issuer: letsencrypt-prod
       traefik.ingress.kubernetes.io/router.entrypoints: websecure
       traefik.ingress.kubernetes.io/service.serversscheme: https
-      traefik.ingress.kubernetes.io/router.middlewares: traefik-basic-auth-middleware@kubernetescrd #,traefik-https-redirect-middleware@kubernetescrd
+      traefik.ingress.kubernetes.io/router.middlewares: traefik-basic-auth-middleware@kubernetescrd
     hosts:
       - alert.${DOMAIN}
     tls:

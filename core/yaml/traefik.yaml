@@ -1,0 +1,192 @@
+#  kubectl logs deployment/traefik -n traefik
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: traefik
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: traefik-external
+  namespace: traefik
+spec:
+  type: LoadBalancer
+  ports:
+  - protocol: TCP
+    name: web
+    port: 80
+  - protocol: TCP
+    name: websecure
+    port: 443
+  - protocol: TCP
+    name: db
+    port: 27501
+    targetPort: 5433
+  selector:
+    app: traefik
+---
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: traefik-internal
+#   namespace: traefik
+# spec:
+#   type: ClusterIP
+#   ports:
+#   - protocol: TCP
+#     name: admin
+#     port: 8080
+#   selector:
+#     app: traefik
+# ---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: traefik-ingress-controller
+  namespace: traefik
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: traefik-logs
+  namespace: traefik
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: traefik
+  namespace: traefik
+  labels:
+    app: traefik
+spec:
+  replicas: 1 # TODO 2 scale for HA
+  selector:
+    matchLabels:
+      app: traefik
+  template:
+    metadata:
+      labels:
+        app: traefik
+    spec:
+      serviceAccountName: traefik-ingress-controller
+      containers:
+      - name: traefik
+        image: traefik:v3.0
+        args:
+        - --providers.kubernetescrd
+        - --providers.kubernetescrd.allowCrossNamespace
+        - --providers.kubernetesIngress.ingressClass=traefik
+        - --entryPoints.web.Address=:80        # http
+        - --entryPoints.websecure.Address=:443 # https
+        - --entryPoints.db.Address=:5433       # DB
+        # - --entryPoints.metrics.address=:9100/tcp
+        # - --entryPoints.traefik.address=:9000/tcp
+        # Logs
+        - --log
+        - --log.level=WARN # DEBUG, INFO, WARN
+        - --log.format=json
+        - --log.filePath=/logs/traefik.log.json
+        - --accesslog
+        # Enable the Dashboard and API https://docs.traefik.io/v2.0/operations/dashboard/#secure-mode
+        - --api.dashboard
+        # Enable Hub communication (open the port 9900 and 9901 by default)
+        - --metrics.prometheus.addRoutersLabels
+        # - --metrics.prometheus.entrypoint=metrics
+        # - --providers.kubernetesingress.ingressendpoint.publishedservice=kube-system/traefik
+        ports:
+        - name: web
+          containerPort: 80
+        - name: websecure
+          containerPort: 443
+        - name: db
+          containerPort: 5433
+        # - name: admin
+        #   containerPort: 8080
+        volumeMounts:
+        - name: traefik-logs
+          mountPath: /logs
+        resources:
+          requests:
+            cpu: 0.5
+            memory: 128Mi
+          limits:
+            cpu: 1
+            memory: 1Gi
+        securityContext:
+          readOnlyRootFilesystem: true
+        # livenessProbe:
+        #   httpGet:
+        #     path: /ping
+        #     port: 8080
+        #     failureThreshold: 3
+        #     initialDelaySeconds: 10
+        #     periodSeconds: 10
+        #     successThreshold: 1
+        #     timeoutSeconds: 2
+        # readinessProbe:
+        #   httpGet:
+        #     path: /ping
+        #     port: 8080
+        #     failureThreshold: 3
+        #     initialDelaySeconds: 10
+        #     periodSeconds: 10
+        #     successThreshold: 1
+        #     timeoutSeconds: 2
+      volumes:
+      - name: localtime
+        hostPath:
+          path: /etc/localtime
+      - name: traefik-logs
+        persistentVolumeClaim:
+          claimName: traefik-logs
+---
+# apiVersion: traefik.io/v1alpha1
+# kind: Middleware
+# metadata:
+#   name: https-redirect-middleware
+#   namespace: traefik
+# spec:
+#   redirectScheme:
+#     scheme: https
+#     permanent: true
+# ---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: basic-auth-middleware
+  namespace: traefik
+spec:
+  basicAuth:
+    removeHeader: true
+    secret: basic-auth-secret
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: traefik-dashboard-tls
+  namespace: traefik
+  annotations:
+    kubernetes.io/ingress.class: traefik
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    traefik.ingress.kubernetes.io/service.serversscheme: https
+spec:
+  entryPoints:
+  - web
+  - websecure
+  routes:
+  - match: Host(`traefik.${DOMAIN}`) && (PathPrefix(`/dashboard`) || PathPrefix(`/api`))
+    kind: Rule
+    services:
+    - name: api@internal # traefik-internal # port: 8080
+      kind: TraefikService
+    middlewares:
+    - name: basic-auth-middleware
+    # - name: https-redirect-middleware
+  tls:
+    secretName: traefik-cert-prod

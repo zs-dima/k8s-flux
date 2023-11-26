@@ -1,0 +1,79 @@
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+  labels:
+    environment: production
+spec:
+  acme:
+    email: ${EMAIL}
+    server: https://acme-v02.api.letsencrypt.org/directory
+    privateKeySecretRef:
+      name: letsencrypt-prod
+    solvers:
+    - dns01:
+        cloudflare:
+          email: ${EMAIL}
+          apiTokenSecretRef:
+            name: cloudflare-api-token-secret
+            key: api-token
+    # - http01:
+    #     ingress:
+    #       class: traefik
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-staging
+  labels:
+    environment: staging
+spec:
+  acme:
+    email: ${EMAIL}
+    server: https://acme-staging-v02.api.letsencrypt.org/directory
+    privateKeySecretRef:
+      name: letsencrypt-staging
+    solvers:
+    - dns01:
+        cloudflare:
+          email: ${EMAIL}
+          apiTokenSecretRef:
+            name: cloudflare-api-token-secret
+            key: api-token
+    # - http01:
+    #     ingress:
+    #       class: traefik
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: traefik-certificate-prod
+  namespace: traefik
+  labels:
+    environment: production
+spec:
+  secretName: traefik-cert-prod
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  commonName: ${DOMAIN}
+  dnsNames:
+  - ${DOMAIN}
+  - "*.${DOMAIN}"
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: traefik-certificate-staging
+  namespace: traefik
+  labels:
+    environment: staging
+spec:
+  secretName: traefik-cert-staging
+  issuerRef:
+    name: letsencrypt-staging
+    kind: ClusterIssuer
+  commonName: ${DOMAIN}
+  dnsNames:
+  - ${DOMAIN}
+  - "*.${DOMAIN}"
