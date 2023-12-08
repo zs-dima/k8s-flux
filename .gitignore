@@ -15,7 +15,6 @@
 # vendor/
 
 bin/
-.tmp/
 
 # IDE
 .vscode/
