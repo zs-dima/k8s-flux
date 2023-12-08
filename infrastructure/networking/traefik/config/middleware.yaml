@@ -1,0 +1,35 @@
+# https://oauth2-proxy.github.io/oauth2-proxy/docs/configuration/overview/#configuring-for-use-with-the-traefik-v2-forwardauth-middleware
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: auth-headers
+  namespace: traefik
+spec:
+  headers:
+    sslRedirect: true
+    stsSeconds: 315360000
+    browserXssFilter: true
+    contentTypeNosniff: true
+    forceSTSHeader: true
+    sslHost: ${DOMAIN}
+    stsIncludeSubdomains: true
+    stsPreload: true
+    frameDeny: true
+---
+# apiVersion: traefik.io/v1alpha1
+# kind: Middleware
+# metadata:
+#   name: https-redirect-middleware
+# spec:
+#   redirectScheme:
+#     scheme: https
+#     permanent: true
+# ---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: basic-auth-middleware
+spec:
+  basicAuth:
+    removeHeader: true
+    secret: basic-auth-key

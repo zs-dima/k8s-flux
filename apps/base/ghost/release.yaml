@@ -1,0 +1,75 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: ghost
+spec:
+  interval: 1h
+  chart:
+    spec:
+      version: "19.6.*"
+      chart: ghost
+      sourceRef:
+        kind: HelmRepository
+        name: ghost
+      interval: 1h
+  # https://github.com/bitnami/charts/blob/main/bitnami/ghost/values.yaml
+  values:
+    image:
+      registry: docker.io
+      repository: bitnami/ghost
+      tag: 5.75.1-alpine # 5.74.5-debian-11-r0 5.71.0
+    persistence:
+      enabled: true
+      existingClaim: ghost-pvc
+    mysql:
+      enabled: true
+      architecture: standalone
+      auth:
+        rootPassword: "c4e2c179-61ca-4167-a748-d7d696589006"
+        database: ghost
+        username: dima
+        password: "7e396022-7102-4937-88c4-2b56ca7d75e7"
+        # existingSecret: ""
+      primary:
+        persistence:
+          enabled: true
+          storageClass: ghost-db-pvc
+          accessModes:
+            - ReadWriteOnce
+          size: 8Gi
+
+    smtpHost: smtp.gmail.com
+    smtpPort: 587
+    smtpUser: $EMAIL
+    smtpPassword: 4acf0160-3148-4895-859e-b5be77e68da0
+    smtpProtocol: tls # tls, ssl
+    # smtpExistingSecret: "" # Must contain key `smtp-password`
+    # smtpService: ""
+
+    extraEnvVars:
+      - name: TZ
+        value: UTC
+      - name: url
+        value: https://ghost.${DOMAIN}
+      # TODO
+      - name: GHOST_SMTP_FROM_ADDRESS
+        value: $EMAIL
+      - name: NODE_ENV
+        value: production
+      - name: LOG_LEVEL
+        value: WARN
+
+    # backup:
+    #   enabled: true
+    #   # specify
+    #   # S3_SECRET_ACCESS_KEY
+    #   # S3_ACCESS_KEY_ID
+    #   # S3_BUCKET
+    #   # S3_REGION
+    #   awsSecretRef: ghost-backup
+    #   schedule: "20 4 * * *" # every day at 1am
+    #   retentionDays: 10
+    #   ttlSecondsAfterFinished: 86400
+
+    ingress:
+      enabled: false

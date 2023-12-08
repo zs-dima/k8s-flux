@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: chat-gpt-value-overrides
+data:
+  values.yaml: |
+    service:
+      port: 3000
+    image:
+      tag: latest
+    ingress:
+      enabled: true
+      className: traefik
+      annotations:
+        cert-manager.io/cluster-issuer: letsencrypt-prod
+        external-dns.kubernetes.io/target: chat.${DOMAIN}
+        traefik.ingress.kubernetes.io/router.entrypoints: websecure,web
+        traefik.ingress.kubernetes.io/service.serversscheme: https
+      hosts:
+          - host: chat.${DOMAIN}
+            paths:
+              - path: /
+                pathType: Prefix
+    resources:
+      requests: 
+        cpu: 10m
+        memory: 100Mi
+      limits:
+        cpu: 100m
+        memory: 500Mi

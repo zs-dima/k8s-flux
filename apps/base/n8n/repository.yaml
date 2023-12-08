@@ -1,0 +1,7 @@
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: HelmRepository
+metadata:
+  name: n8n
+spec:
+  interval: 24h
+  url: https://8gears.container-registry.com/chartrepo/library/

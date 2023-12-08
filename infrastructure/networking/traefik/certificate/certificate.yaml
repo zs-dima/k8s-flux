@@ -1,0 +1,33 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: traefik-certificate-prod
+  labels:
+    environment: production
+spec:
+  secretName: traefik-cert-prod
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+    group: cert-manager.io
+  commonName: "${DOMAIN}"
+  dnsNames:
+    - "${DOMAIN}"
+    - "*.${DOMAIN}"
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: traefik-certificate-staging
+  labels:
+    environment: staging
+spec:
+  secretName: traefik-cert-staging
+  issuerRef:
+    name: letsencrypt-staging
+    kind: ClusterIssuer
+    group: cert-manager.io
+  commonName: "${DOMAIN}"
+  dnsNames:
+    - "${DOMAIN}"
+    - "*.${DOMAIN}"

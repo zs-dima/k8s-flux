@@ -1,0 +1,15 @@
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: system-ks
+  namespace: flux-system
+spec:
+  path: ./infrastructure/system/
+  dependsOn:
+    - name: auth-ks
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  interval: 1h
+  prune: true
+  wait: true

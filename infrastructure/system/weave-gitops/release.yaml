@@ -1,0 +1,68 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: weave-gitops
+  namespace: flux-system
+  annotations:
+    metadata.weave.works/description:
+      This is the Weave GitOps Dashboard. It provides
+      a simple way to get insights into your GitOps workloads.
+spec:
+  interval: 60m
+  chart:
+    spec:
+      chart: weave-gitops
+      version: "*"
+      sourceRef:
+        kind: HelmRepository
+        name: weave-gitops
+        namespace: flux-system
+      interval: 12h
+  # https://github.com/weaveworks/weave-gitops/blob/main/charts/gitops-server/values.yaml
+  values:
+    ingress:
+      enabled: true
+      className: traefik
+      annotations:
+        cert-manager.io/cluster-issuer: letsencrypt-prod
+        external-dns.kubernetes.io/target: weave.${DOMAIN}
+        traefik.ingress.kubernetes.io/router.entrypoints: websecure #,web
+        # ingress.kubernetes.io/auth-remove-header: "false"
+        # ingress.kubernetes.io/auth-response-headers: Authorization
+        # ingress.kubernetes.io/auth-trust-headers: "true"
+        # ingress.kubernetes.io/auth-type: forward
+        ingress.kubernetes.io/auth-url: https://auth.${DOMAIN}/oauth2/auth_or_start?rd=https://weave.${DOMAIN}
+        traefik.ingress.kubernetes.io/router.middlewares: auth-oauth-errors@kubernetescrd,auth-oauth@kubernetescrd
+        # traefik.ingress.kubernetes.io/service.serversscheme: https
+      hosts:
+        - host: weave.${DOMAIN}
+          paths:
+            - path: /
+              pathType: Prefix
+      tls:
+        - secretName: traefik-cert-prod
+          hosts:
+            - weave.${DOMAIN}
+    # envVars:
+    #   - name: WEAVE_GITOPS_FEATURE_OIDC_BUTTON_LABEL
+    #     value: "Login with ACME"
+    # adminUser:
+    #   create: false
+    additionalArgs:
+      # https://docs.gitops.weave.works/docs/guides/anonymous-access/
+      - --insecure-no-authentication-user=gitops-test-user
+      # - --auth-methods=oidc
+    resources:
+      requests:
+        cpu: 100m
+        memory: 64Mi
+      limits:
+        cpu: 1
+        memory: 512Mi
+    securityContext:
+      capabilities:
+        drop:
+          - ALL
+      readOnlyRootFilesystem: true
+      runAsNonRoot: true
+      # runAsUser: 1000

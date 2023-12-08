@@ -1,0 +1,44 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: rancher
+spec:
+  interval: 1h
+  chart:
+    spec:
+      version: "2.8.*"
+      chart: rancher
+      sourceRef:
+        kind: HelmRepository
+        name: rancher
+      interval: 1h
+  # https://github.com/rancher/rancher/blob/release/v2.8/chart/values.yaml
+  values:
+    hostname: rancher.${DOMAIN}
+    bootstrapPassword: ${RANCHER_PASSWORD}
+    ingress:
+      enabled: true
+      # ingressClassName: rancher
+      extraAnnotations: # annotations:
+        kubernetes.io/ingress.class: traefik
+        cert-manager.io/cluster-issuer: letsencrypt-prod
+        external-dns.kubernetes.io/target: rancher.${DOMAIN}
+        traefik.ingress.kubernetes.io/router.entrypoints: websecure
+        traefik.ingress.kubernetes.io/router.tls.domains.0.main: rancher.${DOMAIN}
+        traefik.ingress.kubernetes.io/service.serversscheme: https
+        # traefik.ingress.kubernetes.io/router.middlewares: traefik-https-redirect-middleware@kubernetescrd
+      tls:
+        source: secret
+        secretName: traefik-cert-prod
+      # hosts:
+      # - host: admin.${DOMAIN}
+      #   serviceName: rancher
+      #   servicePort: 80
+      #   paths:
+      #   - path: /
+      #     pathType: Prefix
+      #     # backend:
+      #     #   service:
+      #     #     name: rancher
+      #     #     port:
+      #     #       number: 80

@@ -1,0 +1,13 @@
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: core-ks
+  namespace: flux-system
+spec:
+  path: ./infrastructure/core/
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  interval: 1h
+  prune: true
+  wait: true

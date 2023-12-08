@@ -1,0 +1,55 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: postgres
+spec:
+  interval: 1h
+  chart:
+    spec:
+      version: "13.*"
+      chart: postgres
+      sourceRef:
+        kind: HelmRepository
+        name: postgres
+      interval: 1h
+  # https://github.com/bitnami/charts/blob/main/bitnami/postgresql/values.yaml
+  values:
+    containerPorts:
+      postgresql: 5432
+    primary:
+      service:
+        type: ClusterIP
+        ports:
+          postgresql: 5432
+        nodePorts:
+          postgresql: ""
+        clusterIP: ""
+        annotations: {}
+        loadBalancerIP: ""
+      persistence:
+        enabled: true
+        existingClaim: postgres-pvc
+      initdb:
+        # This ensures that the initial database will be created with the proper collation settings
+        args: "--lc-collate=C --lc-ctype=C"
+      resources:
+        requests:
+          cpu: 500m
+          memory: 512Mi
+        limits:
+          memory: 2Gi
+    auth:
+      database: auth-app
+      enablePostgresUser: true
+      postgresPassword: aaf1ddf9-0016-489e-9c8a-4cbf9104264f
+      # username: db_user
+      # existingSecret: "" # `postgresPassword`, `password`, and `replicationPassword`, `ldap-password`
+      # secretKeys:
+      #   adminPasswordKey: db-password
+      #   userPasswordKey: db-password
+      #   replicationPasswordKey: db-replication-password
+# controller:
+#   ingressClassResource:
+#     name: traefik
+#     default: true
+#     enabled: true

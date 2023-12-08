@@ -1,0 +1,37 @@
+# This should be installed by default by the loki helm chart
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: grafana-datasource-loki
+  namespace: monitoring
+  labels:
+    grafana_datasource: "true"
+data:
+  datasource.yml: |-
+    apiVersion: 1
+    datasources:
+    - name: Loki
+      type: loki
+      orgId: 1
+      access: proxy
+      url: http://loki-stack:3100
+      basicAuth: false
+
+# ---
+# kind: ConfigMap
+# apiVersion: v1
+# metadata:
+#   name: grafana-datasource-prometheus
+#   namespace: monitoring
+#   labels:
+#     grafana_datasource: "true"
+# data:
+#   datasource.yml: |-
+#     apiVersion: 1
+#     datasources:
+#     - name: Prometheus
+#       type: prometheus
+#       orgId: 2
+#       access: proxy
+#       url: http://prometheus-stack-kube-prom-prometheus:9090
+#       basicAuth: false

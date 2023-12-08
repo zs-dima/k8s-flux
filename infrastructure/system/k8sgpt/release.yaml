@@ -1,0 +1,31 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: k8sgpt
+spec:
+  interval: 1h
+  chart:
+    spec:
+      version: "0.*"
+      chart: k8sgpt
+      sourceRef:
+        kind: HelmRepository
+        name: k8sgpt
+      interval: 1h
+  # https://github.com/k8sgpt-ai/k8sgpt/blob/main/charts/k8sgpt/values.yaml
+  values:
+    deployment:
+      annotations: {}
+      env:
+        model: "gpt-3.5-turbo"
+        backend: "openai" # one of: [ openai | llama ]
+      resources:
+        limits:
+          cpu: "1"
+          memory: "512Mi"
+        requests:
+          cpu: "0.2"
+          memory: "156Mi"
+
+    secret:
+      secretKey: "" # TODO base64 encoded OpenAI token

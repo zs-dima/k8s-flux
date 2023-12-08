@@ -1,0 +1,54 @@
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: traefik-certificate
+  namespace: flux-system
+spec:
+  path: ./infrastructure/networking/traefik/certificate/
+  targetNamespace: traefik
+  dependsOn:
+    - name: cert-manager-config
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  interval: 1h
+  prune: true
+  wait: true
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: traefik-ks
+  namespace: flux-system
+spec:
+  path: ./infrastructure/networking/traefik/controller/
+  targetNamespace: traefik
+  dependsOn:
+    - name: traefik-certificate
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  interval: 1h
+  prune: true
+  wait: true
+  healthChecks:
+    - apiVersion: apps/v1
+      kind: Deployment
+      name: cert-manager
+      namespace: cert-manager
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: traefik-config
+  namespace: flux-system
+spec:
+  path: ./infrastructure/networking/traefik/config/
+  targetNamespace: traefik
+  dependsOn:
+    - name: traefik-ks
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  interval: 1h
+  prune: true

@@ -1,0 +1,101 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: traefik
+spec:
+  interval: 1h
+  chart:
+    spec:
+      version: "25.x"
+      chart: traefik
+      sourceRef:
+        kind: HelmRepository
+        name: traefik
+      interval: 1h
+  install:
+    crds: Create
+  upgrade:
+    crds: CreateReplace
+  # https://github.com/traefik/traefik-helm-chart/blob/master/traefik/values.yaml
+  values:
+    image:
+      tag: v3.0
+      pullPolicy: Always
+
+    ports:
+      web:
+        # redirectTo: websecure
+        port: 8000
+        expose: true
+        exposedPort: 80
+        protocol: TCP
+      websecure:
+        port: 8443
+        expose: true
+        exposedPort: 443
+        protocol: TCP
+        http3:
+          enabled: true
+      db:
+        port: 5433
+        expose: true
+        exposedPort: 27501
+        protocol: TCP
+      traefik:
+        port: 9000
+        expose: false
+        exposedPort: 9000
+        protocol: TCP
+
+    ingressRoute:
+      dashboard:
+        matchRule: Host(`traefik.${DOMAIN}`) && (PathPrefix(`/dashboard`) || PathPrefix(`/api`))
+        entryPoints:
+          - websecure
+        annotations:
+          kubernetes.io/ingress.class: traefik
+          cert-manager.io/cluster-issuer: letsencrypt-prod
+          external-dns.kubernetes.io/target: traefik.${DOMAIN}
+          # traefik.ingress.kubernetes.io/router.middlewares: traefik-basic-auth-middleware@kubernetescrd
+          traefik.ingress.kubernetes.io/service.serversscheme: https
+        middlewares:
+          - name: basic-auth-middleware
+        tls:
+          secretName: traefik-cert-prod
+      # healthcheck:
+      #   enabled: true
+      # tls:
+      # - secretName: traefik-cert-prod
+      #   hosts:
+      #   - traefik.${DOMAIN}
+
+    providers:
+      kubernetesCRD:
+        allowCrossNamespace: true
+        allowExternalNameServices: true
+      kubernetesIngress:
+        ingressClass: traefik
+        allowExternalNameServices: true
+        allowEmptyServices: true
+
+    logs:
+      general:
+        format: json
+        level: WARN # DEBUG, PANIC, FATAL, ERROR, WARN, and INFO
+
+    metrics:
+      prometheus:
+        entryPoint: metrics
+        addEntryPointsLabels: true
+        addRoutersLabels: true
+        addServicesLabels: true
+
+    experimental:
+      plugins:
+        enabled: true
+      # kubernetesGateway:
+      #   enabled: true
+
+    globalArguments:
+      - --global.checknewversion=false
+      - --global.sendanonymoususage=false
