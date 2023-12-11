@@ -7,9 +7,10 @@ spec:
   path: ./infrastructure/system/
   dependsOn:
     - name: auth-ks
+  wait: true
+  prune: true
+  timeout: 5m0s
+  interval: 10m0s
   sourceRef:
     kind: GitRepository
     name: flux-system
-  interval: 1h
-  prune: true
-  wait: true

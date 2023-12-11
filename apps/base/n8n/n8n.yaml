@@ -1,0 +1,112 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: n8n-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: longhorn
+  resources:
+    requests:
+      storage: 1Gi
+---
+# apiVersion: v1
+# kind: ConfigMap
+# metadata:
+#   name: n8n-config
+# data:
+#   config.json: |
+#     executions:
+#       pruneData: "true" # prune executions by default
+#       pruneDataMaxAge: 3760 # Per defaut we store 1 year of history
+# ---
+apiVersion: v1
+kind: Service
+metadata:
+  name: n8n-service
+spec:
+  type: ClusterIP
+  selector:
+    app: n8n
+    # component: deployment
+    # app.kubernetes.io/type: master
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 5678
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: n8n
+  labels: &labels
+    app: n8n
+    component: deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels: *labels
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+    type: RollingUpdate
+  template:
+    metadata:
+      labels: *labels
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "5678"
+    spec:
+      containers:
+        - name: n8n
+          image: n8nio/n8n:1.20.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http-metrics
+              containerPort: 5678
+          env:
+            - name: N8N_BASIC_AUTH_ACTIVE
+              value: "false"
+            - name: N8N_HOST
+              value: n8n.${DOMAIN}
+            - name: N8N_PORT
+              value: "5678"
+            - name: N8N_PROTOCOL
+              value: http
+            - name: WEBHOOK_URL
+              value: https://n8n.${DOMAIN}/
+            - name: NODE_ENV
+              value: production
+            - name: TZ
+              value: UTC
+            - name: N8N_METRICS
+              value: "true"
+            - name: NODE_OPTIONS
+              value: "--max_old_space_size=1024"
+            - name: EXECUTIONS_PROCESS
+              value: "main"
+          volumeMounts:
+            - name: data
+              mountPath: /home/node/.n8n
+            # - name: config-volume
+            #   mountPath: /n8n-config
+          # command: ["chown"]
+          # args: ["-R", "node:node", "/home/node/.n8n"]
+          # securityContext:
+          #   runAsUser: 0 # root user
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: n8n-pvc
+        # - name: config-volume
+        #   configMap:
+        #     name: n8n-config

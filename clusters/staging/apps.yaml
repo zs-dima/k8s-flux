@@ -4,13 +4,13 @@ metadata:
   name: apps
   namespace: flux-system
 spec:
-  interval: 10m0s
+  path: ./apps/staging
   dependsOn:
     - name: infra-configs
+  wait: true
+  prune: true
+  timeout: 20m
+  interval: 24h
   sourceRef:
     kind: GitRepository
     name: flux-system
-  path: ./apps/staging
-  prune: true
-  wait: true
-  timeout: 5m0s

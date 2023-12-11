@@ -5,12 +5,13 @@ metadata:
   namespace: flux-system
 spec:
   path: ./infrastructure/auth/oauth2-proxy/controller/
+  wait: true
+  prune: true
+  timeout: 5m0s
+  interval: 10m0s
   sourceRef:
     kind: GitRepository
     name: flux-system
-  interval: 1h
-  prune: true
-  wait: true
   postBuild:
     substituteFrom:
       - kind: ConfigMap
@@ -29,13 +30,15 @@ metadata:
   namespace: flux-system
 spec:
   path: ./infrastructure/auth/oauth2-proxy/config/
+  wait: true
+  prune: true
+  timeout: 5m0s
+  interval: 10m0s
   dependsOn:
     - name: oauth2-proxy-ks
   sourceRef:
     kind: GitRepository
     name: flux-system
-  interval: 1h
-  prune: true
   postBuild:
     substituteFrom:
       - kind: ConfigMap

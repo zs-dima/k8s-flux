@@ -14,10 +14,16 @@ spec:
       interval: 1h
   # https://github.com/bitnami/charts/blob/main/bitnami/ghost/values.yaml
   values:
-    image:
-      registry: docker.io
-      repository: bitnami/ghost
-      tag: 5.75.1-alpine # 5.74.5-debian-11-r0 5.71.0
+    # image:
+    #   registry: docker.io
+    #   repository: bitnami/ghost
+    #   tag: 5.74.5-debian-11-r0 5.71.0
+    startupProbe: # TODO
+      enabled: false
+    readinessProbe: # TODO
+      enabled: false
+    livenessProbe: # TODO
+      enabled: false
     persistence:
       enabled: true
       existingClaim: ghost-pvc
@@ -33,7 +39,7 @@ spec:
       primary:
         persistence:
           enabled: true
-          storageClass: ghost-db-pvc
+          storageClass: longhorn
           accessModes:
             - ReadWriteOnce
           size: 8Gi
@@ -50,7 +56,7 @@ spec:
       - name: TZ
         value: UTC
       - name: url
-        value: https://ghost.${DOMAIN}
+        value: https://blog.${DOMAIN}
       # TODO
       - name: GHOST_SMTP_FROM_ADDRESS
         value: $EMAIL
@@ -72,4 +78,21 @@ spec:
     #   ttlSecondsAfterFinished: 86400
 
     ingress:
-      enabled: false
+      enabled: true
+      ingressClassName: traefik
+      annotations:
+        cert-manager.io/cluster-issuer: letsencrypt-prod
+        external-dns.kubernetes.io/target: blog.${DOMAIN}
+        traefik.ingress.kubernetes.io/router.entrypoints: websecure
+        traefik.ingress.kubernetes.io/router.middlewares: traefik-basic-auth-middleware@kubernetescrd
+        traefik.ingress.kubernetes.io/service.serversscheme: https
+      hostname: blog.${DOMAIN}
+      hosts:
+        - host: blog.${DOMAIN}
+          paths:
+            - path: /
+              pathType: Prefix
+      tls:
+        - secretName: traefik-cert-prod
+          hosts:
+            - blog.${DOMAIN}

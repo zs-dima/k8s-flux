@@ -16,7 +16,8 @@ spec:
   values:
     image:
       repository: n8nio/n8n
-      # tag: latest
+      tag: 1.20.0
+      pullPolicy: IfNotPresent # Always
     persistence:
       enabled: true
       type: pvc
@@ -25,14 +26,15 @@ spec:
     extraEnv:
       N8N_BASIC_AUTH_ACTIVE: false
       N8N_HOST: n8n.${DOMAIN}
-      N8N_PROTOCOL: https
+      N8N_PORT: 80
+      N8N_PROTOCOL: http
       WEBHOOK_URL: https://n8n.${DOMAIN}
       NODE_ENV: production
       TZ: UTC
 
     ingress:
       enabled: true
-      className: traefik
+      ingressClassName: traefik
       annotations:
         cert-manager.io/cluster-issuer: letsencrypt-prod
         external-dns.kubernetes.io/target: n8n.${DOMAIN}
@@ -40,7 +42,10 @@ spec:
         traefik.ingress.kubernetes.io/router.middlewares: traefik-basic-auth-middleware@kubernetescrd
         traefik.ingress.kubernetes.io/service.serversscheme: https
       hosts:
-        - n8n.${DOMAIN}
+        - host: n8n.${DOMAIN}
+          paths:
+            - path: /
+              pathType: Prefix
       tls:
         - secretName: traefik-cert-prod
           hosts:

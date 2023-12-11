@@ -4,17 +4,17 @@ metadata:
   name: monitoring-controllers
   namespace: flux-system
 spec:
+  path: ./infrastructure/monitoring/controllers
+  wait: true
+  prune: true
+  timeout: 5m0s
+  interval: 10m0s
   dependsOn:
     - name: auth-ks
-  interval: 1h
   retryInterval: 2m
-  timeout: 10m
-  prune: true
-  wait: true
   sourceRef:
     kind: GitRepository
     name: flux-system
-  path: ./infrastructure/monitoring/controllers
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
@@ -22,14 +22,13 @@ metadata:
   name: monitoring-configs
   namespace: flux-system
 spec:
+  path: ./infrastructure/monitoring/configs
   dependsOn:
     - name: monitoring-controllers
-  interval: 1h
-  retryInterval: 2m
-  timeout: 5m
-  prune: true
   wait: true
+  prune: true
+  timeout: 5m0s
+  interval: 10m0s
   sourceRef:
     kind: GitRepository
     name: flux-system
-  path: ./infrastructure/monitoring/configs

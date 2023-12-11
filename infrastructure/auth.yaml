@@ -5,12 +5,13 @@ metadata:
   namespace: flux-system
 spec:
   path: ./infrastructure/auth/
+  wait: true
+  prune: true
+  timeout: 5m0s
+  interval: 10m0s
   dependsOn:
     - name: core-ks
     - name: traefik-config
   sourceRef:
     kind: GitRepository
     name: flux-system
-  interval: 1h
-  prune: true
-  wait: true

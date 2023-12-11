@@ -4,16 +4,16 @@ metadata:
   name: apps-ks
   namespace: flux-system
 spec:
-  interval: 10m0s
+  path: ./apps/production
   dependsOn:
     - name: infrastructure-ks
+  wait: true
+  prune: true
+  timeout: 20m
+  interval: 24h
   sourceRef:
     kind: GitRepository
     name: flux-system
-  path: ./apps/production
-  prune: true
-  wait: true
-  timeout: 5m0s
   postBuild:
     substituteFrom:
       - kind: ConfigMap

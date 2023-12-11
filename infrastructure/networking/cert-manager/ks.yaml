@@ -6,12 +6,13 @@ metadata:
 spec:
   path: ./infrastructure/networking/cert-manager/controller/
   targetNamespace: cert-manager
+  wait: true
+  prune: true
+  timeout: 5m0s
+  interval: 10m0s
   sourceRef:
     kind: GitRepository
     name: flux-system
-  interval: 1h
-  prune: true
-  wait: true
   healthChecks:
     - apiVersion: apps/v1
       kind: Deployment
@@ -28,8 +29,10 @@ spec:
   targetNamespace: cert-manager
   dependsOn:
     - name: cert-manager-ks
+  wait: true
+  prune: true
+  timeout: 5m0s
+  interval: 10m0s
   sourceRef:
     kind: GitRepository
     name: flux-system
-  interval: 1h
-  prune: true

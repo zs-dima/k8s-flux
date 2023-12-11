@@ -8,12 +8,13 @@ spec:
   targetNamespace: traefik
   dependsOn:
     - name: cert-manager-config
+  wait: true
+  prune: true
+  timeout: 20m0s
+  interval: 40m0s
   sourceRef:
     kind: GitRepository
     name: flux-system
-  interval: 1h
-  prune: true
-  wait: true
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
@@ -25,12 +26,13 @@ spec:
   targetNamespace: traefik
   dependsOn:
     - name: traefik-certificate
+  wait: true
+  prune: true
+  timeout: 5m0s
+  interval: 10m0s
   sourceRef:
     kind: GitRepository
     name: flux-system
-  interval: 1h
-  prune: true
-  wait: true
   healthChecks:
     - apiVersion: apps/v1
       kind: Deployment
@@ -47,8 +49,10 @@ spec:
   targetNamespace: traefik
   dependsOn:
     - name: traefik-ks
+  wait: true
+  prune: true
+  timeout: 5m0s
+  interval: 10m0s
   sourceRef:
     kind: GitRepository
     name: flux-system
-  interval: 1h
-  prune: true

@@ -1,28 +1,27 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: ghost-ingress
+  name: n8n-ingress
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt-prod
-    external-dns.kubernetes.io/target: blog.${DOMAIN}
-    traefik.ingress.kubernetes.io/router.entrypoints: websecure,web
+    external-dns.kubernetes.io/target: n8n.${DOMAIN}
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure ,web
     traefik.ingress.kubernetes.io/service.serversscheme: https
     traefik.ingress.kubernetes.io/router.middlewares: traefik-basic-auth-middleware@kubernetescrd
 spec:
   ingressClassName: traefik
   rules:
-    - host: blog.${DOMAIN}
+    - host: n8n.${DOMAIN}
       http:
         paths:
           - path: /
             pathType: Prefix
             backend:
               service:
-                name: ghost-service
+                name: n8n-service
                 port:
                   number: 80
-
   tls:
     - secretName: traefik-cert-prod
       hosts:
-        - blog.${DOMAIN}
+        - n8n.${DOMAIN}

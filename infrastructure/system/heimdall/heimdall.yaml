@@ -47,21 +47,28 @@ spec:
         app: heimdall
     spec:
       containers:
-        - image: ghcr.io/linuxserver/heimdall
-          name: heimdall
+        - name: heimdall
+          image: ghcr.io/linuxserver/heimdall
           imagePullPolicy: Always
           ports:
-            - containerPort: 80
-              name: web
+            - name: web
+              containerPort: 80
               protocol: TCP
-            - containerPort: 443
-              name: websecure
+            - name: websecure
+              containerPort: 443
               protocol: TCP
           volumeMounts:
-            - name: heimdall-longhorn-volume
+            - name: heimdall-volume
               mountPath: /config
               subPath: config
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
       volumes:
-        - name: heimdall-longhorn-volume
+        - name: heimdall-volume
           persistentVolumeClaim:
             claimName: heimdall-pvc
