@@ -2,6 +2,7 @@ apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: traefik-certificate-prod
+  namespace: traefik
   labels:
     environment: production
 spec:
@@ -10,15 +11,16 @@ spec:
     name: letsencrypt-prod
     kind: ClusterIssuer
     group: cert-manager.io
-  commonName: "${DOMAIN}"
+  commonName: "*.${DOMAIN}" # TODO
   dnsNames:
-    - "${DOMAIN}"
+    # - "${DOMAIN}" # TODO
     - "*.${DOMAIN}"
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: traefik-certificate-staging
+  namespace: traefik
   labels:
     environment: staging
 spec:

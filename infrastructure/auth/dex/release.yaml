@@ -1,4 +1,4 @@
-apiVersion: helm.toolkit.fluxcd.io/v2beta1
+apiVersion: helm.toolkit.fluxcd.io/v2beta2
 kind: HelmRelease
 metadata:
   name: dex
@@ -7,15 +7,16 @@ spec:
   chart:
     spec:
       chart: dex
-      version: 0.6.5
+      version: "0.15.*"
       sourceRef:
         kind: HelmRepository
         name: dex
         namespace: auth
       interval: 1m
+  # https://github.com/dexidp/helm-charts/blob/master/charts/dex/values.yaml
   values:
-    image:
-      tag: v2.31.0
+    # image:
+    #   tag: v2.31.0
     envVars:
       - name: GITHUB_CLIENT_ID
         valueFrom:
@@ -40,21 +41,26 @@ spec:
       storage:
         type: memory
 
+      oauth2:
+        # Bypass approval screen
+        skipApprovalScreen: true
+
       expiry:
         signingKeys: "4h"
         idTokens: "1h"
       staticClients:
         - name: "OAuth2 Proxy"
           id: oauth2-proxy
-          secret: $OIDC_CLIENT_SECRET
+          secretEnv: OIDC_CLIENT_SECRET
           redirectURIs:
             # These redirect URI points to the `--redirect-url` for OAuth2 proxy.
-            - "https://auth.${DOMAIN}/oauth2/callback"
-      #   - name: "Weave GitOps"
-      #     id: weave-gitops
-      #     secret: AiAImuXKhoI5ApvKWF988txjZ+6rG3S7o6X5En
-      #     redirectURIs:
-      #       - "https://weave.${DOMAIN}/oauth2/callback"
+            - https://auth.${DOMAIN}/oauth2/callback
+
+        - name: "Weave GitOps"
+          id: weave-gitops
+          secretEnv: OIDC_CLIENT_SECRET
+          redirectURIs:
+            - https://weave.${DOMAIN}/oauth2/callback
 
       # enablePasswordDB: true
       # staticPasswords:
@@ -63,6 +69,15 @@ spec:
       #     hash: "$2a$10$2b2cU8CPhOTaGrs1HRQuAueS7JTT5ZHsHSzYiFPm1leZck7Mc8T4W"
       #     username: "admin"
       #     userID: "08a8684b-db88-4b73-90a9-3cd1661f5466"
+
+      frontend:
+        theme: dark
+        # extra:
+        #   client_logo_url:
+
+      # Configuration for telemetry
+      # telemetry:
+      #   http: 0.0.0.0:5558
 
       connectors:
         - type: github
@@ -73,17 +88,15 @@ spec:
             clientSecret: $GITHUB_CLIENT_SECRET
             redirectURI: https://dex.${DOMAIN}/callback
             orgs:
-              - name: zs-dmitrii
+              - name: ${GITHUB_ORG}
 
     ingress:
       enabled: true
       className: traefik
       annotations:
-        cert-manager.io/cluster-issuer: letsencrypt-prod
         external-dns.kubernetes.io/target: dex.${DOMAIN}
         traefik.ingress.kubernetes.io/router.entrypoints: websecure
         traefik.ingress.kubernetes.io/service.serversscheme: https
-
       hosts:
         - host: dex.${DOMAIN}
           paths:

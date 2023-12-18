@@ -1,0 +1,17 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Deploy",
+            "type": "node-terminal",
+            "request": "launch",
+            "command": "task init:pre",
+        },
+        {
+            "name": "Re-reploy",
+            "type": "node-terminal",
+            "request": "launch",
+            "command": "task deploy",
+        }
+    ]
+}

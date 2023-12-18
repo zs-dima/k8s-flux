@@ -1,0 +1,116 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta2
+kind: HelmRelease
+metadata:
+  name: oauth2-proxy
+spec:
+  chart:
+    spec:
+      chart: oauth2-proxy
+      version: "6.*"
+      sourceRef:
+        kind: HelmRepository
+        name: oauth2-proxy
+        namespace: auth
+  interval: 15m
+  timeout: 5m
+  releaseName: oauth2-proxy
+  # https://github.com/oauth2-proxy/manifests/blob/main/helm/oauth2-proxy/values.yaml
+  # https://oauth2-proxy.github.io/oauth2-proxy/docs/configuration/alpha-config/
+  values:
+    proxyVarsAsSecrets: false
+    extraEnv:
+      - name: OAUTH2_PROXY_CLIENT_ID
+        value: oauth2-proxy
+      - name: OAUTH2_PROXY_CLIENT_SECRET
+        valueFrom:
+          secretKeyRef:
+            name: oidc-auth
+            key: oidc-secret
+      - name: OAUTH2_PROXY_COOKIE_SECRET
+        valueFrom:
+          secretKeyRef:
+            name: oidc-auth
+            key: cookie-secret
+      - name: OAUTH2_PROXY_FOOTER
+        value: "<script>(function(){var rd=document.getElementsByName('rd');for(var i=0;i<rd.length;i++)rd[i].value=window.location.toString().split('/oauth2')[0]})()</script>"
+
+    config:
+      # clientID: oauth2-proxy
+      # clientSecret: $OIDC_CLIENT_SECRET
+      # cookieSecret: $OIDC_COOKIE_SECRET
+      configFile: |
+        provider = "oidc"
+        email_domains = [ "*" ]
+        upstreams = [ "file:///dev/null" ]
+        oidc_issuer_url = "https://dex.${DOMAIN}"
+        redirect_url = "https://auth.${DOMAIN}/oauth2/callback"
+        force_code_challenge_method = "S256"
+        pass_access_token = "true"
+        set_authorization_header = "true"
+        set_xauthrequest = "true"
+        skip_auth_preflight = "false"
+        provider_display_name = "GitHub"
+        pass_authorization_header = "true"
+        custom_sign_in_logo = "-"
+
+    extraArgs:
+      whitelist-domain: ".${DOMAIN}"
+      cookie-domain: ".${DOMAIN}"
+
+    service:
+      type: ClusterIP
+      portNumber: 80
+
+    ingress:
+      enabled: true
+      className: traefik
+      annotations:
+        traefik.frontend.rule.type: PathPrefixStrip
+        external-dns.kubernetes.io/target: auth.${DOMAIN}
+        traefik.ingress.kubernetes.io/router.entrypoints: websecure
+        traefik.ingress.kubernetes.io/router.middlewares: auth-oauth-headers@kubernetescrd
+        traefik.ingress.kubernetes.io/service.serversscheme: https
+      path: /oauth2
+      hosts:
+        - auth.${DOMAIN}
+        - longhorn.${DOMAIN}
+        - n8n.${DOMAIN}
+        - prometheus.${DOMAIN}
+        - grafana.${DOMAIN}
+        - alert.${DOMAIN}
+        - traefik.${DOMAIN}
+        - admin.${DOMAIN}
+      tls:
+        - secretName: traefik-cert-prod
+          hosts:
+            - auth.${DOMAIN}
+            - longhorn.${DOMAIN}
+            - n8n.${DOMAIN}
+            - prometheus.${DOMAIN}
+            - grafana.${DOMAIN}
+            - alert.${DOMAIN}
+            - traefik.${DOMAIN}
+            - admin.${DOMAIN}
+
+    # Without IDP
+    # config:
+    #   existingSecret: oidc-auth
+    #   configFile: |
+    #     provider = "github"
+    #     email_domains = [ "*" ]
+    #     upstreams = [ "file:///dev/null" ]
+    #     http_address = "0.0.0.0:4180"
+    #     pass_authorization_header = "true"
+
+    # etc.
+    # upstreams = [ "static://202" ]
+    # skip_provider_button = "true"
+    # reverse_proxy = "true"
+    # scope: "email profile openid"
+
+    #  upstreams = [ "https://weave.${DOMAIN}" ]
+    #  cookie_secure = "false"
+    #  cookie_domain: ".${DOMAIN}"
+    #  whitelist_domain: ".${DOMAIN}"
+    #  http_address = "0.0.0.0:80"
+    #  http_address = "0.0.0.0:4180"

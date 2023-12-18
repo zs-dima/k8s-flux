@@ -12,7 +12,6 @@ data:
       enabled: true
       className: traefik
       annotations:
-        cert-manager.io/cluster-issuer: letsencrypt-prod
         external-dns.kubernetes.io/target: chat.${DOMAIN}
         traefik.ingress.kubernetes.io/router.entrypoints: websecure,web
         traefik.ingress.kubernetes.io/service.serversscheme: https
@@ -21,6 +20,10 @@ data:
             paths:
               - path: /
                 pathType: Prefix
+      tls:
+        - secretName: traefik-cert-prod
+          hosts:
+            - dex.${DOMAIN}
     resources:
       requests: 
         cpu: 10m

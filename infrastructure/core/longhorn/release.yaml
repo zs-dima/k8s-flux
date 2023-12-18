@@ -1,4 +1,4 @@
-apiVersion: helm.toolkit.fluxcd.io/v2beta1
+apiVersion: helm.toolkit.fluxcd.io/v2beta2
 kind: HelmRelease
 metadata:
   name: longhorn
@@ -13,5 +13,31 @@ spec:
         name: longhorn
         namespace: longhorn
       interval: 12h
+  # https://github.com/longhorn/longhorn/blob/master/chart/values.yaml
   values:
-    installCRDs: true
+    # helmPreUpgradeCheckerJob: # ArgoCD fix
+    #   enabled: false
+
+    longhornUI:
+      replicas: 1
+
+    # defaultSettings:
+    #   TODO Available: NFS, CIFS, AWS, GCP, AZURE.
+    #   backupTarget: ~
+
+    metrics:
+      serviceMonitor:
+        enabled: true
+
+    allowCollectingLonghornUsageMetrics: false
+
+    ingress:
+      enabled: true
+      ingressClassName: traefik
+      annotations:
+        external-dns.kubernetes.io/target: longhorn.${DOMAIN}
+        traefik.ingress.kubernetes.io/router.entrypoints: websecure
+        traefik.ingress.kubernetes.io/router.middlewares: auth-oauth@kubernetescrd
+      host: longhorn.${DOMAIN}
+      tls: true
+      tlsSecret: traefik-cert-prod

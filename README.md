@@ -25,3 +25,7 @@ task
 flux get kustomizations
 ```
 
+
+## Troubleshooting
+
+https://fluxcd.io/flux/cheatsheets/troubleshooting/

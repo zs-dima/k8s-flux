@@ -1,4 +1,4 @@
-apiVersion: helm.toolkit.fluxcd.io/v2beta1
+apiVersion: helm.toolkit.fluxcd.io/v2beta2
 kind: HelmRelease
 metadata:
   name: traefik
@@ -20,7 +20,7 @@ spec:
   values:
     image:
       tag: v3.0
-      pullPolicy: Always
+      pullPolicy: IfNotPresent
 
     ports:
       web:
@@ -54,12 +54,11 @@ spec:
           - websecure
         annotations:
           kubernetes.io/ingress.class: traefik
-          cert-manager.io/cluster-issuer: letsencrypt-prod
+          # cert-manager.io/cluster-issuer: letsencrypt-prod
           external-dns.kubernetes.io/target: traefik.${DOMAIN}
-          # traefik.ingress.kubernetes.io/router.middlewares: traefik-basic-auth-middleware@kubernetescrd
-          traefik.ingress.kubernetes.io/service.serversscheme: https
         middlewares:
-          - name: basic-auth-middleware
+          # - name: basic-auth
+          - name: auth-oauth@kubernetescrd
         tls:
           secretName: traefik-cert-prod
       # healthcheck:

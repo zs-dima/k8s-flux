@@ -1,8 +1,7 @@
-apiVersion: helm.toolkit.fluxcd.io/v2beta1
+apiVersion: helm.toolkit.fluxcd.io/v2beta2
 kind: HelmRelease
 metadata:
   name: weave-gitops
-  namespace: flux-system
   annotations:
     metadata.weave.works/description:
       This is the Weave GitOps Dashboard. It provides
@@ -24,16 +23,9 @@ spec:
       enabled: true
       className: traefik
       annotations:
-        cert-manager.io/cluster-issuer: letsencrypt-prod
         external-dns.kubernetes.io/target: weave.${DOMAIN}
-        traefik.ingress.kubernetes.io/router.entrypoints: websecure #,web
-        # ingress.kubernetes.io/auth-remove-header: "false"
-        # ingress.kubernetes.io/auth-response-headers: Authorization
-        # ingress.kubernetes.io/auth-trust-headers: "true"
-        # ingress.kubernetes.io/auth-type: forward
-        ingress.kubernetes.io/auth-url: https://auth.${DOMAIN}/oauth2/auth_or_start?rd=https://weave.${DOMAIN}
-        traefik.ingress.kubernetes.io/router.middlewares: auth-oauth-errors@kubernetescrd,auth-oauth@kubernetescrd
-        # traefik.ingress.kubernetes.io/service.serversscheme: https
+        traefik.ingress.kubernetes.io/router.entrypoints: websecure
+        traefik.ingress.kubernetes.io/service.serversscheme: https
       hosts:
         - host: weave.${DOMAIN}
           paths:
@@ -43,21 +35,29 @@ spec:
         - secretName: traefik-cert-prod
           hosts:
             - weave.${DOMAIN}
-    # envVars:
-    #   - name: WEAVE_GITOPS_FEATURE_OIDC_BUTTON_LABEL
-    #     value: "Login with ACME"
-    # adminUser:
+
+    adminUser:
+      create: false
+    serviceAccount:
+      create: true
+      name: wego-cluster-admin # gitops-test-user
+    # rbac:
     #   create: false
     additionalArgs:
       # https://docs.gitops.weave.works/docs/guides/anonymous-access/
-      - --insecure-no-authentication-user=gitops-test-user
-      # - --auth-methods=oidc
+      # - --insecure-no-authentication-user=gitops-test-user
+      - --auth-methods=oidc
+
+    envVars:
+      - name: WEAVE_GITOPS_FEATURE_OIDC_BUTTON_LABEL
+        value: "Login with ACME"
+
     resources:
       requests:
         cpu: 100m
         memory: 64Mi
       limits:
-        cpu: 1
+        cpu: 200m
         memory: 512Mi
     securityContext:
       capabilities:

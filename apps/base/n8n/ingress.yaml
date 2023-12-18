@@ -3,11 +3,9 @@ kind: Ingress
 metadata:
   name: n8n-ingress
   annotations:
-    cert-manager.io/cluster-issuer: letsencrypt-prod
     external-dns.kubernetes.io/target: n8n.${DOMAIN}
-    traefik.ingress.kubernetes.io/router.entrypoints: websecure ,web
-    traefik.ingress.kubernetes.io/service.serversscheme: https
-    traefik.ingress.kubernetes.io/router.middlewares: traefik-basic-auth-middleware@kubernetescrd
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure,web
+    traefik.ingress.kubernetes.io/router.middlewares: auth-oauth@kubernetescrd
 spec:
   ingressClassName: traefik
   rules:

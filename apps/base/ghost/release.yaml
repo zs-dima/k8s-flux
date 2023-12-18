@@ -1,4 +1,4 @@
-apiVersion: helm.toolkit.fluxcd.io/v2beta1
+apiVersion: helm.toolkit.fluxcd.io/v2beta2
 kind: HelmRelease
 metadata:
   name: ghost
@@ -31,10 +31,10 @@ spec:
       enabled: true
       architecture: standalone
       auth:
-        rootPassword: "c4e2c179-61ca-4167-a748-d7d696589006"
+        rootPassword: "c4e2c179-61ca-4167-a748-d7d696589006" # TODO
         database: ghost
         username: dima
-        password: "7e396022-7102-4937-88c4-2b56ca7d75e7"
+        password: "7e396022-7102-4937-88c4-2b56ca7d75e7" # TODO
         # existingSecret: ""
       primary:
         persistence:
@@ -47,7 +47,7 @@ spec:
     smtpHost: smtp.gmail.com
     smtpPort: 587
     smtpUser: $EMAIL
-    smtpPassword: 4acf0160-3148-4895-859e-b5be77e68da0
+    smtpPassword: 4acf0160-3148-4895-859e-b5be77e68da0 # TODO
     smtpProtocol: tls # tls, ssl
     # smtpExistingSecret: "" # Must contain key `smtp-password`
     # smtpService: ""
@@ -81,10 +81,8 @@ spec:
       enabled: true
       ingressClassName: traefik
       annotations:
-        cert-manager.io/cluster-issuer: letsencrypt-prod
         external-dns.kubernetes.io/target: blog.${DOMAIN}
         traefik.ingress.kubernetes.io/router.entrypoints: websecure
-        traefik.ingress.kubernetes.io/router.middlewares: traefik-basic-auth-middleware@kubernetescrd
         traefik.ingress.kubernetes.io/service.serversscheme: https
       hostname: blog.${DOMAIN}
       hosts:

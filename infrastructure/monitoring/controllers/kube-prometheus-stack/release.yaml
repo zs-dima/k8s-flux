@@ -1,4 +1,4 @@
-apiVersion: helm.toolkit.fluxcd.io/v2beta1
+apiVersion: helm.toolkit.fluxcd.io/v2beta2
 kind: HelmRelease
 metadata:
   name: kube-prometheus-stack
@@ -58,15 +58,14 @@ spec:
                 - ReadWriteOnce
               resources:
                 requests:
-                  storage: 1Gi
+                  storage: 3Gi
       ingress:
         enabled: true
         ingressClassName: traefik
         annotations:
-          cert-manager.io/cluster-issuer: letsencrypt-prod
+          external-dns.kubernetes.io/target: prometheus.${DOMAIN}
           traefik.ingress.kubernetes.io/router.entrypoints: websecure
-          traefik.ingress.kubernetes.io/service.serversscheme: https
-          traefik.ingress.kubernetes.io/router.middlewares: traefik-basic-auth-middleware@kubernetescrd
+          traefik.ingress.kubernetes.io/router.middlewares: auth-oauth@kubernetescrd
         hosts:
           - prometheus.${DOMAIN}
         tls:
@@ -80,10 +79,9 @@ spec:
         enabled: true
         ingressClassName: traefik
         annotations:
-          cert-manager.io/cluster-issuer: letsencrypt-prod
+          external-dns.kubernetes.io/target: grafana.${DOMAIN}
           traefik.ingress.kubernetes.io/router.entrypoints: websecure
-          traefik.ingress.kubernetes.io/service.serversscheme: https
-          traefik.ingress.kubernetes.io/router.middlewares: traefik-basic-auth-middleware@kubernetescrd
+          traefik.ingress.kubernetes.io/router.middlewares: auth-oauth@kubernetescrd
         hosts:
           - grafana.${DOMAIN}
         tls:
@@ -141,10 +139,9 @@ spec:
         enabled: true
         ingressClassName: traefik
         annotations:
-          cert-manager.io/cluster-issuer: letsencrypt-prod
+          external-dns.kubernetes.io/target: alert.${DOMAIN}
           traefik.ingress.kubernetes.io/router.entrypoints: websecure
-          traefik.ingress.kubernetes.io/service.serversscheme: https
-          traefik.ingress.kubernetes.io/router.middlewares: traefik-basic-auth-middleware@kubernetescrd
+          traefik.ingress.kubernetes.io/router.middlewares: auth-oauth@kubernetescrd
         hosts:
           - alert.${DOMAIN}
         tls:

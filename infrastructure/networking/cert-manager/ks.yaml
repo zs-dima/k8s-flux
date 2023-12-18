@@ -5,7 +5,6 @@ metadata:
   namespace: flux-system
 spec:
   path: ./infrastructure/networking/cert-manager/controller/
-  targetNamespace: cert-manager
   wait: true
   prune: true
   timeout: 5m0s
@@ -26,13 +25,12 @@ metadata:
   namespace: flux-system
 spec:
   path: ./infrastructure/networking/cert-manager/config/
-  targetNamespace: cert-manager
   dependsOn:
     - name: cert-manager-ks
   wait: true
   prune: true
-  timeout: 5m0s
-  interval: 10m0s
+  timeout: 20m0s
+  interval: 40m0s
   sourceRef:
     kind: GitRepository
     name: flux-system

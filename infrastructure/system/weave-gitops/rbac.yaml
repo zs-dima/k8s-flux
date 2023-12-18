@@ -1,8 +1,8 @@
----
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: minimum-weavegitops-role
+  name: wego-admin-cluster-role
+  namespace: flux-system
 rules:
   - apiGroups: [""]
     resources: ["secrets", "pods", "events"]
@@ -12,72 +12,38 @@ rules:
     verbs: ["get", "list"]
   - apiGroups: ["kustomize.toolkit.fluxcd.io"]
     resources: ["kustomizations"]
-    verbs: ["get", "list"]
+    verbs: ["get", "list", "patch"]
   - apiGroups: ["helm.toolkit.fluxcd.io"]
     resources: ["helmreleases"]
-    verbs: ["get", "list"]
+    verbs: ["get", "list", "patch"]
   - apiGroups: ["source.toolkit.fluxcd.io"]
     resources: ["*"]
-    verbs: ["get", "list"]
+    # resources:
+    #   [
+    #     "buckets",
+    #     "helmcharts",
+    #     "gitrepositories",
+    #     "helmrepositories",
+    #     "ocirepositories",
+    #   ]
+    verbs: ["get", "list", "patch"]
   - apiGroups: [""]
     resources: ["events"]
-    verbs: ["get", "list", "watch"]
+    verbs: ["get", "watch", "list"]
+  - apiGroups: ["notification.toolkit.fluxcd.io"]
+    resources: ["providers"]
+    verbs: ["list"]
 ---
+# Bind the cluster admin role to the wego-admin group
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: gitops-test-user-binding
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: minimum-weavegitops-role
+  name: wego-cluster-admin
 subjects:
-  - kind: User
-    name: gitops-test-user
-# apiVersion: rbac.authorization.k8s.io/v1
-# kind: ClusterRole
-# metadata:
-#   name: wego-admin-cluster-role
-# rules:
-#   - apiGroups: [""]
-#     resources: ["secrets", "pods"]
-#     verbs: ["get", "list"]
-#   - apiGroups: ["apps"]
-#     resources: ["deployments", "replicasets"]
-#     verbs: ["get", "list"]
-#   - apiGroups: ["kustomize.toolkit.fluxcd.io"]
-#     resources: ["kustomizations"]
-#     verbs: ["get", "list", "patch"]
-#   - apiGroups: ["helm.toolkit.fluxcd.io"]
-#     resources: ["helmreleases"]
-#     verbs: ["get", "list", "patch"]
-#   - apiGroups: ["source.toolkit.fluxcd.io"]
-#     resources:
-#       [
-#         "buckets",
-#         "helmcharts",
-#         "gitrepositories",
-#         "helmrepositories",
-#         "ocirepositories",
-#       ]
-#     verbs: ["get", "list", "patch"]
-#   - apiGroups: [""]
-#     resources: ["events"]
-#     verbs: ["get", "watch", "list"]
-#   - apiGroups: ["notification.toolkit.fluxcd.io"]
-#     resources: ["providers"]
-#     verbs: ["list"]
-# ---
-# # Bind the cluster admin role to the wego-admin group
-# apiVersion: rbac.authorization.k8s.io/v1
-# kind: ClusterRoleBinding
-# metadata:
-#   name: wego-cluster-admin
-# subjects:
-#   - kind: Group
-#     name: zs-dima:Contributors
-#     apiGroup: rbac.authorization.k8s.io
-# roleRef:
-#   kind: ClusterRole
-#   name: wego-admin-cluster-role
-#   apiGroup: rbac.authorization.k8s.io
+  - kind: Group
+    name: ${GITHUB_ORG}:Contributors
+    apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: ClusterRole
+  name: wego-admin-cluster-role
+  apiGroup: rbac.authorization.k8s.io

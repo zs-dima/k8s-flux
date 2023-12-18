@@ -9,8 +9,8 @@ spec:
     - name: infrastructure-ks
   wait: true
   prune: true
-  timeout: 20m
-  interval: 24h
+  timeout: 10m
+  interval: 12h
   sourceRef:
     kind: GitRepository
     name: flux-system
