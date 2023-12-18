@@ -11,9 +11,9 @@ spec:
     name: letsencrypt-prod
     kind: ClusterIssuer
     group: cert-manager.io
-  commonName: "*.${DOMAIN}" # TODO
+  commonName: "${DOMAIN}"
   dnsNames:
-    # - "${DOMAIN}" # TODO
+    - "${DOMAIN}"
     - "*.${DOMAIN}"
 ---
 apiVersion: cert-manager.io/v1
