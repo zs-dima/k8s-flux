@@ -1,0 +1,109 @@
+---
+# Homepage configuration
+# https://github.com/linuxserver/Heimdall-Apps
+# https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/proxmox.png
+
+# title: ""
+# subtitle: ""
+# logo: "logo.png"
+# icon: "fas fa-yin-yang" # https://fontawesome.com/v5/search
+# assets/icons/favicon.ico
+
+header: false
+footer: false
+
+# hotkey:
+#   search: "Shift" # hotkey for search, defaults to "/"
+
+columns: 4 # "auto" or number (must be a factor of 12: 1, 2, 3, 4, 6, 12)
+connectivityCheck:
+  true # display a message when the apps are not accessible anymore
+  # set it to true when using an authentication proxy, it also reloads the page when a redirection.
+
+defaults:
+  layout: list # 'columns', 'list'
+  colorTheme: au
+
+theme: default
+colors:
+  light:
+    highlight-primary: "#3367d6"
+    highlight-secondary: "#4285f4"
+    highlight-hover: "#5a95f5"
+    background: "#f5f5f5"
+    card-background: "#ffffff"
+    text: "#363636"
+    text-header: "#ffffff"
+    text-title: "#303030"
+    text-subtitle: "#424242"
+    card-shadow: rgba(0, 0, 0, 0.1)
+    link: "#3273dc"
+    link-hover: "#363636"
+  dark:
+    highlight-primary: "#3c3c3c" # "#3367d6"
+    highlight-secondary: "#505050" # "#4285f4"
+    highlight-hover: "#505050" # "#5a95f5"
+    background: "#000000" # "#131313"
+    card-background: "#2b2b2b"
+    text: "#eaeaea"
+    text-header: "#ffffff"
+    text-title: "#fafafa"
+    text-subtitle: "#f5f5f5"
+    card-shadow: rgba(0, 0, 0, 0.4)
+    link: "#3273dc"
+    link-hover: "#ffdd57"
+
+# Optional navbar
+links: []
+
+services:
+  - name: Apps
+    icon: fas fa-cloud
+    items:
+      - name: Traefik
+        url: https://traefik.${DOMAIN}/dashboard/
+        logo: https://github.com/linuxserver/Heimdall-Apps/blob/master/Traefik/traefik.svg?raw=true
+
+      - name: Rancher
+        url: https://rancher.${DOMAIN}
+        logo: https://github.com/linuxserver/Heimdall-Apps/blob/master/Rancher/rancher.svg?raw=true
+        tag: Rancher
+
+      - name: Uptime
+        # type: UptimeKuma
+        url: https://uptimerobot.com/dashboard#mainDashboard
+        logo: https://github.com/linuxserver/Heimdall-Apps/blob/master/UptimeKuma/uptime-kuma.svg?raw=true
+
+      - name: n8n
+        url: https://n8n.${DOMAIN}
+        logo: https://github.com/linuxserver/Heimdall-Apps/blob/master/N8n/n8n.svg?raw=true
+
+      - name: Weave
+        url: https://weave.${DOMAIN}
+        logo: https://github.com/linuxserver/Heimdall-Apps/blob/master/Watcher/watcher.png?raw=true
+
+      - name: Prometheus
+        # type: Prometheus
+        url: https://prometheus.${DOMAIN}
+        # endpoint: http://kube-prometheus-stack-prometheus.monitoring:9090
+        logo: https://github.com/linuxserver/Heimdall-Apps/blob/master/Prometheus/prometheus.png?raw=true
+
+      - name: Grafana
+        url: https://grafana.${DOMAIN}/dashboards
+        logo: https://github.com/linuxserver/Heimdall-Apps/blob/master/Grafana/grafana.svg?raw=true
+      - name: Longhorn
+        url: https://longhorn.${DOMAIN}
+        logo: https://github.com/linuxserver/Heimdall-Apps/blob/master/Ceph/ceph.png?raw=true
+      - name: Alertmanager
+        url: https://alert.${DOMAIN}
+        logo: https://github.com/linuxserver/Heimdall-Apps/blob/master/Alertmanager/alertmanager.png?raw=true
+
+  # - name: "Tools"
+  #   icon: "fa-solid fa-screwdriver-wrench"
+  #   items:
+  #     - name: "Weather"
+  #       location: "Lyon"
+  #       apikey: "xxxxxxxxxxxx" # insert your own API key here. Request one from https://openweathermap.org/api.
+  #       units: "metric"
+  #       endpoint: "https://homer-demo-content.netlify.app/openweather/weather"
+  #       type: "OpenWeather"

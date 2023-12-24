@@ -1,0 +1,18 @@
+# https://raw.githubusercontent.com/cloudnative-pg/cloudnative-pg/main/docs/src/samples/monitoring/podmonitor.yaml
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: cnpg-controller-manager
+  namespace: postgres
+  labels:
+    app.kubernetes.io/part-of: flux
+    app.kubernetes.io/component: monitoring
+spec:
+  namespaceSelector:
+    matchNames:
+      - postgres
+  selector:
+    matchLabels:
+      cnpg.io/cluster: postgres-system
+  podMetricsEndpoints:
+    - port: metrics

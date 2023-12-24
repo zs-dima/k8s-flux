@@ -6,7 +6,7 @@ spec:
   interval: 1h
   chart:
     spec:
-      version: "54.x"
+      version: "55.*"
       chart: kube-prometheus-stack
       sourceRef:
         kind: HelmRepository
@@ -25,12 +25,42 @@ spec:
     # Disable etcd monitoring. See https://github.com/cablespaghetti/k3s-monitoring/issues/4
     kubeEtcd:
       enabled: false
-
     # Disable kube-controller-manager and kube-scheduler monitoring. See https://github.com/cablespaghetti/k3s-monitoring/issues/2
     kubeControllerManager:
       enabled: false
     kubeScheduler:
       enabled: false
+
+    # CNPG https://raw.githubusercontent.com/cloudnative-pg/cloudnative-pg/main/docs/src/samples/monitoring/kube-stack-config.yaml
+    nodeExporter:
+      enabled: false
+    defaultRules:
+      create: true
+      rules:
+        alertmanager: false
+        etcd: false
+        configReloaders: false
+        general: false
+        k8s: true
+        kubeApiserver: false
+        kubeApiserverAvailability: false
+        kubeApiserverSlos: false
+        kubelet: true
+        kubeProxy: false
+        kubePrometheusGeneral: false
+        kubePrometheusNodeRecording: false
+        kubernetesApps: false
+        kubernetesResources: false
+        kubernetesStorage: false
+        kubernetesSystem: false
+        kubeScheduler: false
+        kubeStateMetrics: false
+        network: false
+        node: true
+        nodeExporterAlerting: false
+        nodeExporterRecording: true
+        prometheus: false
+        prometheusOperator: false
 
     prometheus:
       prometheusSpec:
@@ -41,6 +71,10 @@ spec:
           requests:
             cpu: 200m
             memory: 200Mi
+        podMonitorSelectorNilUsesHelmValues: false # CNPG
+        ruleSelectorNilUsesHelmValues: false # CNPG
+        serviceMonitorSelectorNilUsesHelmValues: false # CNPG
+        probeSelectorNilUsesHelmValues: false # CNPG
         podMonitorNamespaceSelector: {}
         podMonitorSelector:
           matchLabels:
@@ -75,6 +109,10 @@ spec:
 
     grafana:
       enabled: true
+      # defaultDashboardsEnabled: false
+      sidecar:
+        dashboards:
+          enabled: true
       ingress:
         enabled: true
         ingressClassName: traefik
@@ -96,20 +134,20 @@ spec:
         - grafana-github-datasource
         - grafana-simple-json-datasource
         - simpod-json-datasource
-      dashboardProviders:
-      dashboardproviders.yaml:
-        apiVersion: 1
-        providers:
-          - name: "default"
-            orgId: 1
-            folder: ""
-            type: file
-            disableDeletion: false
-            editable: true
-            options:
-              path: /var/lib/grafana/dashboards/default
-      dashboardsConfigMaps:
-      default: "traefik-dashboard"
+      # dashboardProviders:
+      #   dashboardproviders.yaml:
+      #     apiVersion: 1
+      #     providers:
+      #       - name: "default"
+      #         orgId: 1
+      #         folder: ""
+      #         type: file
+      #         disableDeletion: false
+      #         editable: true
+      #         options:
+      #           path: /var/lib/grafana/dashboards/default
+      # dashboardsConfigMaps:
+      #   default: traefik-dashboard # flux-grafana-dashboards
       grafana.ini:
         users:
           viewers_can_edit: true

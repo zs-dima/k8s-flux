@@ -2,9 +2,6 @@ version: "3"
 
 tasks:
   default:
-    # deps:
-    #   - init:pre
-    #   - init:post
     cmds:
       - task: init:pre
       - task: init:post
@@ -30,53 +27,18 @@ tasks:
     cmds:
       - echo "Setting up secrets"
 
+      - kubectl create ns external-secrets --dry-run=client -o yaml | kubectl apply -f -
+      - |
+        kubectl create secret generic gcp -n external-secrets \
+          --from-file=credentials=scripts/secrets/google_cloud/account.json \
+          -o yaml --dry-run=client | kubectl apply -f -
+
       - kubectl create ns flux-system --dry-run=client -o yaml | kubectl apply -f -
-
-      - kubectl create ns auth --dry-run=client -o yaml | kubectl apply -f -
-      - |
-        kubectl create secret generic oidc-auth -n auth \
-          --from-literal=client-id=$GITHUB_CLIENT_ID \
-          --from-literal=client-secret=$GITHUB_CLIENT_SECRET \
-          --from-literal=cookie-secret=$OIDC_COOKIE_SECRET \
-          --from-literal=oidc-secret=$OIDC_CLIENT_SECRET \
-          -o yaml --dry-run=client | kubectl apply -f -
-      - |
-        kubectl create secret generic oidc-auth -n flux-system \
-          --from-literal=clientID=weave-gitops \
-          --from-literal=clientSecret=$OIDC_CLIENT_SECRET \
-          --from-literal=issuerURL=https://dex.$DOMAIN \
-          --from-literal=redirectURL=https://weave.$DOMAIN/oauth2/callback \
-          -o yaml --dry-run=client | kubectl apply -f -
-
-      - kubectl create ns cert-manager --dry-run=client -o yaml | kubectl apply -f -
-      - |
-        kubectl create secret generic cloudflare-api-key -n cert-manager \
-          --from-literal=api-key=$CLOUDFLARE_API_KEY \
-          -o yaml --dry-run=client | kubectl apply -f -
-      - |
-        kubectl create secret generic zero-ssl-eab-key -n cert-manager \
-          --from-literal=secret=$ZEROSSL_EAB_HMAC_KEY \
-          -o yaml --dry-run=client | kubectl apply -f -
-
-      - kubectl create ns traefik --dry-run=client -o yaml | kubectl apply -f -
-      - |
-        kubectl create secret generic basic-auth-key -n traefik \
-          --from-literal=auth=$BASIC_AUTH_KEY \
-          -o yaml --dry-run=client | kubectl apply -f -
-
-      # kubectl create secret docker-registry docker-registry-key \
-      #   --docker-server=https://index.docker.io/v1/ \
-      #   --docker-username=[DockerHub username] \
-      #   --docker-password=[DockerHub access token] \
-      #   --docker-email=[email address]
-      # - kubectl create ns dev-apps --dry-run=client -o yaml | kubectl apply -f -
       - |
         kubectl create configmap variables-config -n flux-system \
           --from-literal=DOMAIN=$DOMAIN \
           --from-literal=EMAIL=$EMAIL \
-          --from-literal=GITHUB_ORG=$GITHUB_ORG \
-          --from-literal=CLOUDFLARE_ZONE_ID=$CLOUDFLARE_ZONE_ID \
-          --from-literal=ZEROSSL_EAB_KID=$ZEROSSL_EAB_KID \
+          --from-literal=GOOGLE_CLOUD_PROJECT=$GOOGLE_CLOUD_PROJECT \
           -o yaml --dry-run=client | kubectl apply -f -
 
       - flux check --pre

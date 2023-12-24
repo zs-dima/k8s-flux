@@ -28,3 +28,7 @@ spec:
             substituteFrom:
               - kind: ConfigMap
                 name: variables-config
+              - kind: Secret
+                name: variables-secret
+
+# TODO variables-secret used by Dex, external-dns, weave-gitops

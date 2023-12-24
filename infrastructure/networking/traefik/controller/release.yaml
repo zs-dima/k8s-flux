@@ -36,11 +36,6 @@ spec:
         protocol: TCP
         http3:
           enabled: true
-      db:
-        port: 5433
-        expose: true
-        exposedPort: 27501
-        protocol: TCP
       traefik:
         port: 9000
         expose: false

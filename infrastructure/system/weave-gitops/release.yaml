@@ -3,9 +3,7 @@ kind: HelmRelease
 metadata:
   name: weave-gitops
   annotations:
-    metadata.weave.works/description:
-      This is the Weave GitOps Dashboard. It provides
-      a simple way to get insights into your GitOps workloads.
+    metadata.weave.works/description: This is the Weave GitOps Dashboard.
 spec:
   interval: 60m
   chart:

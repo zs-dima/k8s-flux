@@ -1,0 +1,38 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: pg-credentials
+type: Opaque
+stringData:
+  url: "postgres://user:pass@your.db.com:5432/?search_path=myapp&sslmode=disable"
+---
+apiVersion: db.atlasgo.io/v1alpha1
+kind: AtlasSchema
+metadata:
+  name: sample-schema
+spec:
+  urlFrom:
+    secretKeyRef:
+      key: url
+      name: pg-credentials
+  schema:
+    sql: |
+      create table schema (
+        id varchar(50) not null,
+        description text,
+        primary key (id)
+      );
+      create table comments (
+        id serial,
+        schema_id varchar(50) not null,
+        description text not null,
+        primary key (id),
+        CONSTRAINT fk_schema FOREIGN KEY(schema_id) REFERENCES schema(id)
+      );
+  policy:
+    lint:
+      destructive:
+        error: false
+    # diff:
+    #   skip:
+    #     drop_column: true

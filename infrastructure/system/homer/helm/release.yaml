@@ -1,0 +1,39 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta2
+kind: HelmRelease
+metadata:
+  name: homer
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: homer
+      version: "*"
+      sourceRef:
+        kind: HelmRepository
+        name: homer
+        namespace: homer
+      interval: 12h
+  # https://github.com/gabe565/charts/blob/main/charts/homer/values.yaml
+  values:
+    configmap:
+      config:
+        enabled: true
+        data:
+          config.yml: |
+            externalConfig: https://raw.githubusercontent.com/bastienwirtz/homer/main/public/assets/config.yml.dist
+    ingress:
+      main:
+        enabled: true
+        ingressClassName: traefik
+        annotations:
+          external-dns.kubernetes.io/target: admin.${DOMAIN}
+          traefik.ingress.kubernetes.io/router.entrypoints: websecure
+          traefik.ingress.kubernetes.io/router.middlewares: auth-oauth@kubernetescrd
+        host: admin.${DOMAIN}
+        paths:
+          - path: /
+            pathType: Prefix
+        tls:
+          - secretName: traefik-cert-prod
+            hosts:
+              - admin.${DOMAIN}

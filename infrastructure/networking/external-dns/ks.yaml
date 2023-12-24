@@ -1,0 +1,16 @@
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: external-dns-ks
+  namespace: flux-system
+spec:
+  path: ./infrastructure/networking/external-dns/
+  dependsOn:
+    - name: external-secrets-config
+  wait: true
+  prune: true
+  timeout: 5m0s
+  interval: 10m0s
+  sourceRef:
+    kind: GitRepository
+    name: flux-system

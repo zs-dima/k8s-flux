@@ -1,0 +1,9 @@
+# This should be installed by default by the loki helm chart
+apiVersion: 1
+datasources:
+  - name: Prometheus
+    type: prometheus
+    orgId: 2
+    access: proxy
+    url: http://prometheus-stack-kube-prom-prometheus:9090
+    basicAuth: false

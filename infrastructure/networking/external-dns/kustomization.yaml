@@ -3,5 +3,6 @@ kind: Kustomization
 namespace: cert-manager
 resources:
   - crd.yaml
+  - secret.yaml
   - repository.yaml
   - release.yaml

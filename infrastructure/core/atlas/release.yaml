@@ -1,0 +1,17 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta2
+kind: HelmRelease
+metadata:
+  name: atlas
+spec:
+  interval: 1h
+  chart:
+    spec:
+      version: "*"
+      chart: atlas-operator
+      sourceRef:
+        kind: HelmRepository
+        name: atlas
+      interval: 1h
+  # https://atlasgo.io/integrations/kubernetes/operator
+  # https://github.com/ariga/atlas-operator/blob/master/charts/atlas-operator/values.yaml
+  # values:

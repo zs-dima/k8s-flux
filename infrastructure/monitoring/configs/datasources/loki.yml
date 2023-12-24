@@ -1,0 +1,9 @@
+# This should be installed by default by the loki helm chart
+apiVersion: 1
+datasources:
+  - name: Loki
+    type: loki
+    orgId: 1
+    access: proxy
+    url: http://loki-stack:3100
+    basicAuth: false

@@ -5,6 +5,8 @@ metadata:
   namespace: flux-system
 spec:
   path: ./infrastructure/networking/cert-manager/controller/
+  dependsOn:
+    - name: external-secrets-config
   wait: true
   prune: true
   timeout: 5m0s

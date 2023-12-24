@@ -1,0 +1,20 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Backup
+metadata:
+  name: backup-on-demand
+spec:
+  cluster:
+    name: cluster-cnpg
+    namespace: cnpg
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: ScheduledBackup
+metadata:
+  name: cluster-cnpg-scheduled-backup
+  namespace: cnpg
+spec:
+  schedule: "0 0 * * *" # every day at midnight
+  backupOwnerReference: self
+  cluster:
+    name: cluster-cnpg
+  immediate: true

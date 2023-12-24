@@ -3,6 +3,9 @@ kind: Kustomization
 namespace: monitoring
 resources:
   - podmonitor.yaml
+  - cnpg
+generatorOptions:
+  disableNameSuffixHash: true
 configMapGenerator:
   - name: flux-grafana-dashboards
     files:
@@ -10,8 +13,17 @@ configMapGenerator:
       - dashboards/control-plane.json
       - dashboards/cluster.json
       - dashboards/logs.json
+      - dashboards/cnpg.json
     options:
       labels:
         grafana_dashboard: "1"
+        app.kubernetes.io/part-of: flux
+        app.kubernetes.io/component: monitoring
+  - name: flux-grafana-datasources
+    files:
+      - datasources/loki.yml
+    options:
+      labels:
+        grafana_datasource: "true"
         app.kubernetes.io/part-of: flux
         app.kubernetes.io/component: monitoring

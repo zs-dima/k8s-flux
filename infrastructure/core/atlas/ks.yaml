@@ -1,0 +1,31 @@
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: atlas-ks
+  namespace: flux-system
+spec:
+  path: ./infrastructure/core/atlas/
+  wait: true
+  prune: true
+  timeout: 5m0s
+  interval: 10m0s
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: atlas-config
+  namespace: flux-system
+spec:
+  path: ./infrastructure/core/atlas/config/
+  dependsOn:
+    - name: atlas-ks
+  wait: true
+  prune: true
+  timeout: 5m0s
+  interval: 10m0s
+  sourceRef:
+    kind: GitRepository
+    name: flux-system

@@ -15,12 +15,14 @@ task init:k3s
 
 1. Rename .env.example to .env and fill variables
 
-2. Run task to deploy cluster
+2. Setup external secrets: /scripts/secrets/google_cloud/README.md
+
+3. Run task to deploy cluster
 ```shell
 task
 ```
 
-3. Check if cluster is deployed
+4. Check if cluster is deployed
 ```shell
 flux get kustomizations
 ```

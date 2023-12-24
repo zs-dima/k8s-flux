@@ -23,3 +23,6 @@ bin/
 # etc
 *.agekey
 .env
+
+
+scripts/secrets/google_cloud/account.json

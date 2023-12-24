@@ -4,7 +4,6 @@ resources:
   - ../base/n8n
   - ../base/ghost
   # - ../base/chat-gpt
-  # - ../base/postgres
 #   - ../base/podinfo
 # patches:
 #   - path: podinfo-values.yaml

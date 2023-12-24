@@ -7,7 +7,7 @@ spec:
   chart:
     spec:
       chart: external-dns
-      version: "1.x"
+      version: "*"
       sourceRef:
         kind: HelmRepository
         name: external-dns
@@ -23,6 +23,7 @@ spec:
       retries: 3
   uninstall:
     keepHistory: false
+  # https://github.com/kubernetes-sigs/external-dns/blob/master/charts/external-dns/values.yaml
   values:
     fullnameOverride: *app
     provider: cloudflare
@@ -43,8 +44,9 @@ spec:
     sources: ["crd", "ingress", "service"]
     # txtPrefix: k8s.
     # txtOwnerId: default
-    # domainFilters: ["${SECRET_DOMAIN}"]
+    domainFilters:
+      - "${DOMAIN}"
     # serviceMonitor:
     # enabled: true
-    podAnnotations:
-      secret.reloader.stakater.com/reload: cloudflare-api-key
+    # TODO podAnnotations:
+    #   secret.reloader.stakater.com/reload: cloudflare-api-key
