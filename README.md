@@ -1,4 +1,4 @@
-### Kubernetes Cluster configuration to deploy using FluxCD.
+# Kubernetes Cluster configuration to deploy using FluxCD.
 
 ## Installation
 
