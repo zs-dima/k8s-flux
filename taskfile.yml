@@ -81,3 +81,6 @@ tasks:
 
       - echo "Setting up FluxCD"
       - curl -s https://fluxcd.io/install.sh | sudo bash
+
+      - echo "Setting up Timoni"
+      - wget https://github.com/stefanprodan/timoni/releases/download/v0.18.0/timoni_0.18.0_linux_arm64.tar.gz && tar -xzf timoni_0.18.0_linux_arm64.tar.gz timoni && sudo mv timoni /usr/local/bin/

@@ -28,6 +28,17 @@ spec:
             substituteFrom:
               - kind: ConfigMap
                 name: variables-config
+    - target:
+        kind: Kustomization
+        group: kustomize.toolkit.fluxcd.io
+        labelSelector: "substitute=secrets"
+      patch: |-
+        - op: add
+          path: /spec/postBuild
+          value:
+            substituteFrom:
+              - kind: ConfigMap
+                name: variables-config
               - kind: Secret
                 name: variables-secret
 

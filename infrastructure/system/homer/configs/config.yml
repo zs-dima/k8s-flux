@@ -98,6 +98,10 @@ services:
         url: https://alert.${DOMAIN}
         logo: https://github.com/linuxserver/Heimdall-Apps/blob/master/Alertmanager/alertmanager.png?raw=true
 
+      - name: Auth
+        url: https://auth.${DOMAIN}/oauth2/userinfo
+        logo: https://github.com/linuxserver/Heimdall-Apps/blob/master/Alertmanager/alertmanager.png?raw=true
+
   # - name: "Tools"
   #   icon: "fa-solid fa-screwdriver-wrench"
   #   items:

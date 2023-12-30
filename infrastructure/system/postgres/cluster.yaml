@@ -24,17 +24,14 @@
 # data:
 #   ACCESS_KEY_ID: a2V5X2lk
 #   ACCESS_SECRET_KEY: c2VjcmV0X2tleQ==
----
+# ---
 apiVersion: postgresql.cnpg.io/v1
 kind: Cluster
 metadata:
   name: postgres-system
 spec:
   description: "System postgres cluster"
-  # imageName: ghcr.io/cloudnative-pg/postgresql:15.3
-  # imagePullSecret is only required if the images are located in a private registry
-  # imagePullSecrets:
-  #   - name: private_registry_access
+  # imageName: ghcr.io/cloudnative-pg/postgresql:16.1
   instances: 3
   startDelay: 300
   stopDelay: 300
@@ -42,6 +39,7 @@ spec:
 
   postgresql:
     parameters:
+      # timezone: "Europe/Rome"
       shared_buffers: 256MB
       pg_stat_statements.max: "10000"
       pg_stat_statements.track: all

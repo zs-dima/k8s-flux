@@ -1,0 +1,12 @@
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: OCIRepository
+metadata:
+  name: flagger-loadtester
+  namespace: apps
+spec:
+  interval: 6h # scan for new versions every six hours
+  url: oci://ghcr.io/fluxcd/flagger-manifests
+  ref:
+    semver: "*" # update to the latest version
+  verify: # verify the artifact signature with Cosign keyless
+    provider: cosign

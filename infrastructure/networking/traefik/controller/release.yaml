@@ -63,6 +63,11 @@ spec:
       #   hosts:
       #   - traefik.${DOMAIN}
 
+    # deployment:
+    #   podAnnotations:
+    #     prometheus.io/port: "9100"
+    #     prometheus.io/scrape: "true"
+    #     prometheus.io/path: "/metrics"
     providers:
       kubernetesCRD:
         allowCrossNamespace: true
@@ -84,11 +89,10 @@ spec:
         addRoutersLabels: true
         addServicesLabels: true
 
-    experimental:
-      plugins:
-        enabled: true
-      # kubernetesGateway:
-      #   enabled: true
+    # experimental:
+    #   plugins:
+    # kubernetesGateway:
+    #   enabled: true
 
     globalArguments:
       - --global.checknewversion=false
