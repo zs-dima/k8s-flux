@@ -42,4 +42,4 @@ spec:
               - kind: Secret
                 name: variables-secret
 
-# TODO variables-secret used by Dex, external-dns, weave-gitops
+# TODO variables-secret used by Dex, external-dns, weave-gitops, postgres backup

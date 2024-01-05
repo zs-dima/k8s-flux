@@ -1,20 +1,31 @@
-apiVersion: postgresql.cnpg.io/v1
-kind: Backup
-metadata:
-  name: backup-on-demand
-spec:
-  cluster:
-    name: cluster-cnpg
-    namespace: cnpg
----
+# apiVersion: postgresql.cnpg.io/v1
+# kind: Backup
+# metadata:
+#   name: postgres-system-backup-on-demand
+# spec:
+#   method: barmanObjectStore
+#   cluster:
+#     name: postgres-system
+# ---
+
+# kubectl create -n postgres -f - <<EOF
+# apiVersion: postgresql.cnpg.io/v1
+# kind: Backup
+# metadata:
+#   name: postgres-system-backup
+# spec:
+#   cluster:
+#     name: postgres-system
+# EOF
+
 apiVersion: postgresql.cnpg.io/v1
 kind: ScheduledBackup
 metadata:
-  name: cluster-cnpg-scheduled-backup
-  namespace: cnpg
+  name: postgres-system-scheduled-backup
 spec:
-  schedule: "0 0 * * *" # every day at midnight
+  schedule: "0 0 0 * * *" # every day at midnight
+  method: barmanObjectStore
   backupOwnerReference: self
   cluster:
-    name: cluster-cnpg
+    name: postgres-system
   immediate: true
